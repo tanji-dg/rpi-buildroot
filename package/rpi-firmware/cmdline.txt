@@ -1,1 +1,3 @@
-root=/dev/mmcblk0p2 rootwait console=tty1 console=ttyAMA0,115200
+root=/dev/mmcblk0p2 rootwait console=tty1
+#root=/dev/mmcblk0p2 rootwait console=tty1 console=ttyAMA0,115200
+#root=/dev/nfs nfsroot=169.254.82.103:/nfs/client1 rw ip=dhcp rootwait elevator=deadline
