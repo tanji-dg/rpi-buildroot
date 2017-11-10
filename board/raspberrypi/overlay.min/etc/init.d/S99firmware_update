@@ -1,0 +1,21 @@
+#!/bin/sh
+#
+# Start firmware updater
+#
+
+DIR=firmware_updater
+
+case "$1" in
+  start)
+	printf "Starting firmware updater: "
+	/bin/mount -t vfat -o ro /dev/mmcblk0p1 /boot
+	[ $? = 0 -a -e /boot/$DIR ] && cp -rp /boot/$DIR /tmp
+	/bin/umount /boot
+	[ -x /tmp/$DIR/updater ] && ( cd /tmp/$DIR && ./updater && echo 'OK' || echo 'FAILED' )
+	;;
+  *)
+	exit 0
+esac
+
+exit $?
+
