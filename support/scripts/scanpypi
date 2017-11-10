@@ -536,8 +536,15 @@ class BuildrootPackage():
         help_lines = map(lambda x: x + '\n', help_lines)
         lines += help_lines
 
+	#print(lines)
         with open(path_to_config, 'w') as config_file:
-            config_file.writelines(lines)
+            #config_file.writelines(print(type(line)) for line in lines)
+	    for line in lines:
+		#print(line, type(line))
+		if isinstance(line, str):
+		    config_file.write(line)
+		elif isinstance(line, unicode):
+		    config_file.write(line.encode('utf-8'))
 
 
 def main():
