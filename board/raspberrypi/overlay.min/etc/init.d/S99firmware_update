@@ -4,18 +4,45 @@
 #
 
 DIR=firmware_updater
+CONFIG=/boot/config.txt
+
+run_updater() {
+
+    for i in /boot/firmware_updater/*.sh; do
+	echo $i
+	. $i install $(basename $i .sh).tgz
+	if [ $? = 0 ]; then
+	    /bin/rm -vf $i
+	    echo 'OK'
+	else
+	    echo 'FAILED'
+	fi
+    done
+}
+
+restart() {
+    /bin/mv -vf $CONFIG.bak $CONFIG
+    /bin/sync
+    /bin/sync
+    /bin/sync
+    /sbin/reboot
+}
 
 case "$1" in
   start)
 	printf "Starting firmware updater: "
-	/bin/mount -t vfat -o ro /dev/mmcblk0p1 /boot
-	[ $? = 0 -a -e /boot/$DIR ] && cp -rp /boot/$DIR /tmp
-	/bin/umount /boot
-	[ -x /tmp/$DIR/updater ] && ( cd /tmp/$DIR && ./updater && echo 'OK' || echo 'FAILED' )
+	/bin/mount -o remount,rw /boot
+	if [ -x /boot/firmware_updater/updater ]; then
+	    /boot/firmware_updater/updater 
+	elif [ -e /boot/firmware_updater/*.sh ]; then
+	    run_updater
+	fi
+	if [ -e $CONFIG.bak ]; then
+	    restart
+	fi
 	;;
   *)
 	exit 0
 esac
 
 exit $?
-
