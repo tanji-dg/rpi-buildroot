@@ -32,6 +32,7 @@ force_turbo=1
 
 [all]
 dtparam=i2c_arm=on,spi=on
+dtoverlay=i2c-gpio
 dtoverlay=i2c-rtc-overlay,rx8130
 dtoverlay=spi-bcm2708,spi-dma
 #dtdebug=1
