@@ -51,6 +51,8 @@ done
 
 rm -rf "${GENIMAGE_TMP}"
 
+rm -f ${BINARIES_DIR}/rpi-firmware/overlays/i2c-rtc.dtbo
+
 genimage                           \
 	--rootpath "${TARGET_DIR}"     \
 	--tmppath "${GENIMAGE_TMP}"    \
