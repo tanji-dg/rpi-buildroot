@@ -14,6 +14,7 @@ endef
 define RPI_EEPROMUTILS_INSTALL_TARGET_CMDS
 	$(INSTALL) -m 0755 $(@D)/eepromutils/eepmake $(TARGET_DIR)/usr/bin/eepmake
 	$(INSTALL) -m 0755 $(@D)/eepromutils/eepdump $(TARGET_DIR)/usr/bin/eepdump
+	$(INSTALL) -m 0755 $(@D)/eepromutils/eepflash.sh $(TARGET_DIR)/usr/bin/eepflash
 endef
 
 $(eval $(generic-package))
