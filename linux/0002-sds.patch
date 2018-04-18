@@ -1,0 +1,246 @@
+diff --git a/arch/arm/boot/dts/overlays/adafruit13m-overlay.dts b/arch/arm/boot/dts/overlays/adafruit13m-overlay.dts
+new file mode 100644
+index 0000000..c7f8556
+--- /dev/null
++++ b/arch/arm/boot/dts/overlays/adafruit13m-overlay.dts
+@@ -0,0 +1,85 @@
++/*
++ * adafruit13m-overlay.dts
++ *
++ * -------------------------------------------------
++ * 
++ * -------------------------------------------------
++ * Device---Driver-----BUS       GPIO's
++ * display  adafruit13m  spi0.0    25 9
++
++ * Based on  tinylcd35-overlay.dts
++ *  5/3/2015  -- Noralf Trønnes     Initial Device tree framework
++ *  10/3/2015 -- tinylcd@gmail.com  added ds1307 support.
++ *  4/2/2018 -- tanji@daitogiken.com SDS Type-C board support.
++ */
++
++/dts-v1/;
++/plugin/;
++
++/ {
++	compatible = "brcm,bcm2835", "brcm,bcm2708", "brcm,bcm2709";
++
++	fragment@0 {
++		target = <&spi0>;
++		__overlay__ {
++			status = "okay";
++
++			spidev@0{
++				status = "disabled";
++			};
++
++			spidev@1{
++				status = "disabled";
++			};
++		};
++	};
++
++	fragment@1 {
++		target = <&gpio>;
++		__overlay__ {
++			adafruit13m_pins: adafruit13m_pins {
++				brcm,pins = <25 9>;
++				brcm,function = <1 1>; /* out */
++			};
++		};
++	};
++
++	fragment@2 {
++		target = <&spi0>;
++		__overlay__ {
++			/* needed to avoid dtc warning */
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			adafruit13m: adafruit13m@0{
++				compatible = "solomon,ssd1306";
++				reg = <0>;
++				pinctrl-names = "default";
++				pinctrl-0 = <&adafruit13m_pins>;
++				spi-max-frequency = <6000000>;
++				buswidth = <8>;
++				fps = <20>;
++				reset-gpios = <&gpio 25 0>;
++				dc-gpios = <&gpio 9 0>;
++				debug = <0>;
++
++			};
++
++		};
++	};
++
++	fragment@3 {
++		target = <&spi0_pins>;
++		__overlay__ {
++			brcm,pins = <10 11>;
++			brcm,function = <4>; /* alt0 */
++		};
++	};
++
++	__overrides__ {
++		speed =      <&adafruit13m>,"spi-max-frequency:0";
++		rotate =     <&adafruit13m>,"rotate:0";
++		fps =        <&adafruit13m>,"fps:0";
++		debug =      <&adafruit13m>,"debug:0";
++	};
++};
+diff --git a/arch/arm/boot/dts/overlays/i2c-rtc-overlay.dts b/arch/arm/boot/dts/overlays/i2c-rtc-overlay.dts
+index fcb846a..15e1faa 100644
+--- a/arch/arm/boot/dts/overlays/i2c-rtc-overlay.dts
++++ b/arch/arm/boot/dts/overlays/i2c-rtc-overlay.dts
+@@ -158,6 +158,21 @@
+ 		};
+ 	};
+ 
++	fragment@10 {
++		target = <&i2c_gpio>;
++		__dormant__ {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "okay";
++
++			rx8130: rx8130@32 {
++				compatible = "epson,rx8130";
++				reg = <0x32>;
++				status = "okay";
++			};
++		};
++	};
++
+ 	__overrides__ {
+ 		abx80x = <0>,"+0";
+ 		ds1307 = <0>,"+1";
+@@ -169,6 +184,7 @@
+ 		pcf8523 = <0>,"+7";
+ 		pcf8563 = <0>,"+8";
+ 		m41t62 = <0>,"+9";
++		rx8130 = <0>,"+10";
+ 		trickle-diode-type = <&abx80x>,"abracon,tc-diode";
+ 		trickle-resistor-ohms = <&ds1339>,"trickle-resistor-ohms:0",
+ 					<&abx80x>,"abracon,tc-resistor";
+diff --git a/arch/arm/configs/bcm2709_defconfig b/arch/arm/configs/bcm2709_defconfig
+index b35e737..0c60564 100644
+--- a/arch/arm/configs/bcm2709_defconfig
++++ b/arch/arm/configs/bcm2709_defconfig
+@@ -1212,6 +1212,9 @@ CONFIG_BTRFS_FS=m
+ CONFIG_BTRFS_FS_POSIX_ACL=y
+ CONFIG_NILFS2_FS=m
+ CONFIG_F2FS_FS=y
++CONFIG_F2FS_FS_SECURITY=y
++CONFIG_F2FS_CHECK_FS=y
++CONFIG_F2FS_FS_ENCRYPTION=y
+ CONFIG_FANOTIFY=y
+ CONFIG_QFMT_V1=m
+ CONFIG_QFMT_V2=m
+@@ -1319,9 +1322,6 @@ CONFIG_KGDB=y
+ CONFIG_KGDB_KDB=y
+ CONFIG_KDB_KEYBOARD=y
+ CONFIG_CRYPTO_USER=m
+-CONFIG_CRYPTO_CBC=y
+-CONFIG_CRYPTO_CTS=m
+-CONFIG_CRYPTO_XTS=m
+ CONFIG_CRYPTO_XCBC=m
+ CONFIG_CRYPTO_TGR192=m
+ CONFIG_CRYPTO_WP512=m
+diff --git a/arch/arm/configs/bcmrpi_defconfig b/arch/arm/configs/bcmrpi_defconfig
+index 23360b1..370ab14 100644
+--- a/arch/arm/configs/bcmrpi_defconfig
++++ b/arch/arm/configs/bcmrpi_defconfig
+@@ -849,6 +849,34 @@ CONFIG_FB_BCM2708=y
+ CONFIG_FB_UDL=m
+ CONFIG_FB_SSD1307=m
+ CONFIG_FB_RPISENSE=m
++CONFIG_FB_TFT=m
++CONFIG_FB_TFT_AGM1264K_FL=m
++CONFIG_FB_TFT_BD663474=m
++CONFIG_FB_TFT_HX8340BN=m
++CONFIG_FB_TFT_HX8347D=m
++CONFIG_FB_TFT_HX8353D=m
++CONFIG_FB_TFT_ILI9320=m
++CONFIG_FB_TFT_ILI9325=m
++CONFIG_FB_TFT_ILI9340=m
++CONFIG_FB_TFT_ILI9341=m
++CONFIG_FB_TFT_ILI9481=m
++CONFIG_FB_TFT_ILI9486=m
++CONFIG_FB_TFT_PCD8544=m
++CONFIG_FB_TFT_RA8875=m
++CONFIG_FB_TFT_S6D02A1=m
++CONFIG_FB_TFT_S6D1121=m
++CONFIG_FB_TFT_SSD1289=m
++CONFIG_FB_TFT_SSD1306=m
++CONFIG_FB_TFT_SSD1331=m
++CONFIG_FB_TFT_SSD1351=m
++CONFIG_FB_TFT_ST7735R=m
++CONFIG_FB_TFT_TINYLCD=m
++CONFIG_FB_TFT_TLS8204=m
++CONFIG_FB_TFT_UC1701=m
++CONFIG_FB_TFT_UPD161704=m
++CONFIG_FB_TFT_WATTEROTT=m
++CONFIG_FB_FLEX=m
++CONFIG_FB_TFT_FBTFT_DEVICE=m
+ # CONFIG_BACKLIGHT_GENERIC is not set
+ CONFIG_BACKLIGHT_RPI=m
+ CONFIG_BACKLIGHT_GPIO=m
+@@ -1152,37 +1180,9 @@ CONFIG_LIRC_IMON=m
+ CONFIG_LIRC_RPI=m
+ CONFIG_LIRC_SASEM=m
+ CONFIG_LIRC_SERIAL=m
+-CONFIG_FB_TFT=m
+-CONFIG_FB_TFT_AGM1264K_FL=m
+-CONFIG_FB_TFT_BD663474=m
+-CONFIG_FB_TFT_HX8340BN=m
+-CONFIG_FB_TFT_HX8347D=m
+-CONFIG_FB_TFT_HX8353D=m
+ CONFIG_FB_TFT_HX8357D=m
+ CONFIG_FB_TFT_ILI9163=m
+-CONFIG_FB_TFT_ILI9320=m
+-CONFIG_FB_TFT_ILI9325=m
+-CONFIG_FB_TFT_ILI9340=m
+-CONFIG_FB_TFT_ILI9341=m
+-CONFIG_FB_TFT_ILI9481=m
+-CONFIG_FB_TFT_ILI9486=m
+-CONFIG_FB_TFT_PCD8544=m
+-CONFIG_FB_TFT_RA8875=m
+-CONFIG_FB_TFT_S6D02A1=m
+-CONFIG_FB_TFT_S6D1121=m
+-CONFIG_FB_TFT_SSD1289=m
+-CONFIG_FB_TFT_SSD1306=m
+-CONFIG_FB_TFT_SSD1331=m
+-CONFIG_FB_TFT_SSD1351=m
+-CONFIG_FB_TFT_ST7735R=m
+ CONFIG_FB_TFT_ST7789V=m
+-CONFIG_FB_TFT_TINYLCD=m
+-CONFIG_FB_TFT_TLS8204=m
+-CONFIG_FB_TFT_UC1701=m
+-CONFIG_FB_TFT_UPD161704=m
+-CONFIG_FB_TFT_WATTEROTT=m
+-CONFIG_FB_FLEX=m
+-CONFIG_FB_TFT_FBTFT_DEVICE=m
+ CONFIG_MAILBOX=y
+ CONFIG_BCM2835_MBOX=y
+ # CONFIG_IOMMU_SUPPORT is not set
+@@ -1221,6 +1221,9 @@ CONFIG_BTRFS_FS=m
+ CONFIG_BTRFS_FS_POSIX_ACL=y
+ CONFIG_NILFS2_FS=m
+ CONFIG_F2FS_FS=y
++CONFIG_F2FS_FS_SECURITY=y
++CONFIG_F2FS_CHECK_FS=y
++CONFIG_F2FS_FS_ENCRYPTION=y
+ CONFIG_FANOTIFY=y
+ CONFIG_QFMT_V1=m
+ CONFIG_QFMT_V2=m
+@@ -1329,9 +1332,6 @@ CONFIG_KGDB_KDB=y
+ CONFIG_KDB_KEYBOARD=y
+ CONFIG_CRYPTO_USER=m
+ CONFIG_CRYPTO_CRYPTD=m
+-CONFIG_CRYPTO_CBC=y
+-CONFIG_CRYPTO_CTS=m
+-CONFIG_CRYPTO_XTS=m
+ CONFIG_CRYPTO_XCBC=m
+ CONFIG_CRYPTO_SHA512=m
+ CONFIG_CRYPTO_TGR192=m
