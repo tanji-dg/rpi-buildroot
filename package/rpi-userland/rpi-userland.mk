@@ -53,11 +53,20 @@ RPI_USERLAND_CONF_OPTS += -DALL_APPS=OFF
 
 endif # BR2_PACKAGE_RPI_USERLAND_HELLO
 
+define RPI_USERLAND_INSTALL_TARGET_LIBFDT
+	$(INSTALL) -m 0644 -D \
+		$(@D)/build/lib/libfdt.so \
+		$(TARGET_DIR)/usr/lib/libfdt.so
+endef
+RPI_USERLAND_POST_INSTALL_TARGET_HOOKS += RPI_USERLAND_INSTALL_TARGET_LIBFDT
+
 define RPI_USERLAND_POST_TARGET_CLEANUP
 	rm -f $(TARGET_DIR)/etc/init.d/vcfiled
 	rm -f $(TARGET_DIR)/usr/share/install/vcfiled
 	rmdir --ignore-fail-on-non-empty $(TARGET_DIR)/usr/share/install
 	rm -Rf $(TARGET_DIR)/usr/src
+	rm -f $(TARGET_DIR)/usr/bin/dtoverlay-pre
+	rm -f $(TARGET_DIR)/usr/bin/dtoverlay-post
 endef
 RPI_USERLAND_POST_INSTALL_TARGET_HOOKS += RPI_USERLAND_POST_TARGET_CLEANUP
 
