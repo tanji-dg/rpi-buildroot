@@ -31,8 +31,15 @@ restart() {
 case "$1" in
   start)
 	printf "Starting firmware updater: "
+	while [ ! -e /dev/mmcblk0p1 ]; do
+	    sleep 0.1
+	done
+	/bin/mount /boot
 	/bin/mount -o remount,rw /boot
 	if [ -x /boot/firmware_updater/updater ]; then
+	    while [ ! -e /dev/sda1 ]; do
+		sleep 0.1
+	    done
 	    /boot/firmware_updater/updater 
 	elif [ -e /boot/firmware_updater/*.sh ]; then
 	    run_updater

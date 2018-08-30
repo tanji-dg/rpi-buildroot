@@ -33,5 +33,5 @@ core_freq=250
 dtparam=i2c_arm=on,spi=on
 dtoverlay=i2c-gpio
 dtoverlay=i2c-rtc,rx8130
-dtoverlay=spi-bcm2708,spi-dma
+#dtoverlay=spi-bcm2708,spi-dma
 #dtdebug=1
