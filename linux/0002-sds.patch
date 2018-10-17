@@ -200,10 +200,10 @@ index 7f11b7c..2958a16 100644
  					<&abx80x>,"abracon,tc-resistor";
 diff --git a/arch/arm/boot/dts/overlays/sds-typec-overlay.dts b/arch/arm/boot/dts/overlays/sds-typec-overlay.dts
 new file mode 100644
-index 0000000..b9edf2a
+index 0000000..8dc24a4
 --- /dev/null
 +++ b/arch/arm/boot/dts/overlays/sds-typec-overlay.dts
-@@ -0,0 +1,134 @@
+@@ -0,0 +1,145 @@
 +/*
 + * sds type-c
 + */
@@ -327,6 +327,17 @@ index 0000000..b9edf2a
 +					linux,code = <0x101>;
 +					gpios = <&gpio 22 1>;
 +				};
++			};
++		};
++	};
++
++	fragment@6 {
++		target = <&i2c0>;
++		__overlay__ {
++			at24@50 {
++				compatible = "atmel,24c32";
++				pagesize = <32>;
++				reg = <0x50>;
 +			};
 +		};
 +	};
